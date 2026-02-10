@@ -1,0 +1,146 @@
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local Modal = loadstring(game:HttpGet("https://github.com/lxte/Modal/releases/latest/download/main.lua"))()
+local LocalPlayer = Players.LocalPlayer
+
+local Platform = nil
+local PlatformEnabled = false
+local PlatformSize = 10
+local PlatformOffset = 3.5
+
+local Window = Modal:CreateWindow({
+    Title = "Modal",
+    SubTitle = "Floating platform script",
+    Size = UDim2.fromOffset(400, 420),
+    MinimumSize = Vector2.new(300, 300),
+    Transparency = 0,
+    Icon = "rbxassetid://10734950309",
+})
+
+local MoveTab = Window:AddTab("Platform")
+
+MoveTab:New("Title")({ Title = "Platform" })
+
+local PlatformToggle = MoveTab:New("Toggle")({
+    Title = "Enable platform",
+    Description = "Toggle platform",
+    DefaultValue = false,
+    Callback = function(Value)
+        PlatformEnabled = Value
+        if not Value and Platform then
+            Platform:Destroy()
+            Platform = nil
+        end
+    end,
+})
+
+MoveTab:New("Title")({ Title = "Settings" })
+
+MoveTab:New("Slider")({
+    Title = "Platform size",
+    Description = "Width and length",
+    Default = 10,
+    Minimum = 10,
+    Maximum = 100,
+    DecimalCount = 0,
+    Callback = function(Value)
+        PlatformSize = Value
+        if Platform then Platform.Size = Vector3.new(Value, 0.5, Value) end
+    end,
+})
+
+MoveTab:New("Slider")({
+    Title = "Height offset",
+    Description = "Distance below character",
+    Default = 3.5,
+    Minimum = 0,
+    Maximum = 100,
+    DecimalCount = 1,
+    Callback = function(Value)
+        PlatformOffset = Value
+    end,
+})
+
+local SettingsTab = Window:AddTab("Settings")
+
+SettingsTab:New("Dropdown")({
+    Title = "Theme",
+    Options = { "Light", "Dark", "Midnight", "Rose", "Emerald" },
+    Default = "Midnight",
+    Callback = function(Theme)
+        Window:SetTheme(Theme)
+    end,
+})
+
+SettingsTab:New("Button")({
+    Title = "Unload script",
+    Description = "Destroy the menu",
+    Callback = function()
+        PlatformEnabled = false
+        if Platform then Platform:Destroy() end
+        Window:Destroy()
+    end,
+})
+
+local CreditsTab = Window:AddTab("Credits")
+
+CreditsTab:New("Title")({
+    Title = "By robloxplayer37864"
+})
+
+CreditsTab:New("Button")({
+    Title = "Scriptblox profile",
+    Description = "Copy scriptblox",
+    Callback = function()
+        setclipboard("https://scriptblox.com/u/Robloxplayer37864")
+        Window:Notify({
+            Title = "Copied",
+            Description = "Link copied to clipboard",
+            Duration = 3,
+            Type = "Info"
+        })
+    end,
+})
+
+CreditsTab:New("Button")({
+    Title = "YouTube channel",
+    Description = "Copy yt",
+    Callback = function()
+        setclipboard("https://m.youtube.com/channel/UCl_PyQtHlElFskDOljep5MQ")
+        Window:Notify({
+            Title = "Copied",
+            Description = "Link copied to clipboard",
+            Duration = 3,
+            Type = "Info"
+        })
+    end,
+})
+
+RunService.Heartbeat:Connect(function()
+    if PlatformEnabled then
+        local Character = LocalPlayer.Character
+        local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+        
+        if RootPart then
+            if not Platform or not Platform.Parent then
+                Platform = Instance.new("Part")
+                Platform.Name = "StablePlatform"
+                Platform.Size = Vector3.new(PlatformSize, 0.5, PlatformSize)
+                Platform.Anchored = true
+                Platform.CanCollide = true
+                Platform.Material = Enum.Material.Plastic
+                Platform.Color = Color3.fromRGB(255, 255, 255)
+                Platform.TopSurface = Enum.SurfaceType.Studs
+                Platform.Parent = workspace
+            end
+            Platform.CFrame = CFrame.new(RootPart.Position.X, RootPart.Position.Y - PlatformOffset, RootPart.Position.Z)
+        end
+    elseif Platform then
+        Platform:Destroy()
+        Platform = nil
+    end
+end)
+
+Window:SetTab("Platform")
+Window:SetTheme("Midnight")
